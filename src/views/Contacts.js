@@ -93,18 +93,29 @@ const Contacts = () => {
     }
   };
 
+
   const handleSaveEdit = async (updatedContact) => {
     try {
       await axios.put(
         `http://localhost:7071/api/updateEmployee/${updatedContact.id}`,
         updatedContact
       );
-      await fetchData(); // Fetch updated data
-      setOpenEdit(false); // Close edit modal
+      await fetchData(); // Refetch data after deletion
+      setRowSelectionModel([]);
+      // Clone rows and update the specific row
+      const updatedRows = rows.map((row) =>
+        row.id === updatedContact.id ? { ...row, ...updatedContact } : row
+      );
+      setRows(updatedRows); // Update the state with the modified rows
+  
+      setOpenEdit(false);
     } catch (error) {
       console.error("Error updating employee:", error);
     }
+    await fetchData(); 
   };
+  
+  
   
   
   
@@ -178,6 +189,7 @@ const Contacts = () => {
 
       <Paper sx={{ height: 400, width: "100%", marginTop: "1rem" }}>
         <DataGrid
+        key={rows.length} 
           rows={filteredRows}
           columns={columns}
           pageSize={5}
@@ -212,8 +224,8 @@ const Contacts = () => {
         open={openEdit}
         onClose={() => setOpenEdit(false)}
         onSave={(updatedContact) => {
-          handleSaveEdit(updatedContact); // Save the updated contact
           setOpenEdit(false); // Ensure modal closes
+          handleSaveEdit(updatedContact); // Save the updated contact
         }}
         contact={selectedContact}
       />
