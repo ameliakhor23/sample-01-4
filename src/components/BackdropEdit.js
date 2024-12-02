@@ -11,6 +11,7 @@ const BackdropEdit = ({ open, onClose, onSave, contact }) => {
     phone: "",
   });
 
+  
   useEffect(() => {
     if (contact) {
       setFormData(contact);  // Initialize form data with selected contact details
@@ -33,18 +34,21 @@ const BackdropEdit = ({ open, onClose, onSave, contact }) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),  // Send updated form data as JSON
+       
       });
+      onSave(formData);  // Call onSave function passed as prop
+      onClose();  // Close the dialog after saving
 
-      if (response.ok) {
-        const result = await response.json();
-        console.log(result);  // Optionally log the result from the API
-        onSave(formData);  // Call onSave function passed as prop
-        onClose();  // Close the dialog after saving
+      // if (response.ok) {
+      //   const result = await response.json();
+      //   console.log(result);  // Optionally log the result from the API
+      //   onSave(formData);  // Call onSave function passed as prop
+      //   onClose();  // Close the dialog after saving
         
-      } else {
-        console.error("Error saving employee data");
-        onClose();
-      }
+      // } else {
+      //   console.error("Error saving employee data");
+      //   onClose();
+      // }
     } catch (error) {
       console.error("An error occurred:", error);
       onClose();
