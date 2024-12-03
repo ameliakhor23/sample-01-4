@@ -66,6 +66,7 @@ const BackdropEdit = ({ open, onClose, onSave, contact }) => {
               <p>{contact.company || "N/A"}</p>
               <TextField
                 label="Company"
+                variant="filled"
                 name="company"
                 value={formData.company}
                 onChange={handleChange}
@@ -78,6 +79,7 @@ const BackdropEdit = ({ open, onClose, onSave, contact }) => {
               <p>{contact.role || "N/A"}</p>
               <TextField
                 label="Role"
+                variant="filled"
                 name="role"
                 value={formData.role}
                 onChange={handleChange}
@@ -90,6 +92,7 @@ const BackdropEdit = ({ open, onClose, onSave, contact }) => {
               <p>{contact.firstName || "N/A"}</p>
               <TextField
                 label="First Name"
+                variant="filled"
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleChange}
@@ -102,6 +105,7 @@ const BackdropEdit = ({ open, onClose, onSave, contact }) => {
               <p>{contact.lastName || "N/A"}</p>
               <TextField
                 label="Last Name"
+                variant="filled"
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleChange}
@@ -114,6 +118,7 @@ const BackdropEdit = ({ open, onClose, onSave, contact }) => {
               <p>{contact.email || "N/A"}</p>
               <TextField
                 label="Email"
+                variant="filled"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
@@ -126,6 +131,7 @@ const BackdropEdit = ({ open, onClose, onSave, contact }) => {
               <p>{contact.phone || "N/A"}</p>
               <TextField
                 label="Phone"
+                variant="filled"
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
@@ -137,11 +143,11 @@ const BackdropEdit = ({ open, onClose, onSave, contact }) => {
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary">
-          Cancel
-        </Button>
         <Button onClick={handleSave} color="primary">
           Save
+        </Button>
+        <Button onClick={onClose} color="primary">
+          Cancel
         </Button>
       </DialogActions>
     </Dialog>

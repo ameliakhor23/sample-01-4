@@ -14,8 +14,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import { useAuth0 } from "@auth0/auth0-react";
-
+import BackdropDelete from "../components/BackdropDelete";
 
 const columns = [
   { field: "id", headerName: "ID", width: 70 },
@@ -35,27 +34,27 @@ const Contacts = () => {
   const [rowSelectionModel, setRowSelectionModel] = useState([]);
   const [openEdit, setOpenEdit] = useState(false);
   const [selectedContact, setSelectedContact] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false); // Modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false); // State for delete backdrop
   
+  // Fetch contacts data
+  const fetchData = async () => {
+    const url = "http://localhost:7071/api/employees";
+    try {
+      const response = await axios.get(url);
+      const dataWithId = response.data.map((item, index) => ({
+        ...item,
+        id: item.id || index, // Ensure every item has an `id`
+      }));
+      setRows(dataWithId); // Update rows state with new data
+    } catch (error) {
+      console.error("Error fetching employee data:", error);
+    } finally {
+      setLoading(false); // Ensure loading is false after fetch
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      const url = "http://localhost:7071/api/employees";
-      try {
-        const response = await axios.get(url);
-        const dataWithId = response.data.map((item, index) => ({
-          ...item,
-          id: item.id || index, // Ensure every item has an `id`
-        }));
-        setRows(dataWithId); // Update rows state with new data
-      } catch (error) {
-        console.error("Error fetching employee data:", error);
-      } finally {
-        setLoading(false); // Ensure loading is false after fetch
-      }
-    };
-    
-
     fetchData();
   }, []);
 
@@ -69,20 +68,21 @@ const Contacts = () => {
     await fetchData(); // Refetch data to include the newly added contact
   };
   
-
-  const handleDelete = async () => {
-    try {
-      await axios.delete('http://localhost:7071/api/deleteEmployee', {
-        data: { ids: rowSelectionModel },
-      });
-      await fetchData(); // Refetch data after deletion
-      setRowSelectionModel([]);
-    } catch (error) {
-      console.error("Error deleting employees:", error);
+  const handleDelete = () => {
+    if (rowSelectionModel.length > 0) {
+      const contactToDelete = rows.find(row => row.id === rowSelectionModel[0]);
+      setSelectedContact(contactToDelete); // Set the contact to delete
+      setOpenDelete(true); // Open the delete backdrop
+    } else {
+      alert("Please select a contact to delete.");
     }
   };
-  
 
+  const closeDeleteBackdrop = () => {
+    setOpenDelete(false);
+    setSelectedContact(null);
+  };
+  
   const handleEditContact = () => {
     if (rowSelectionModel.length === 1) {
       const contactToEdit = rows.find(row => row.id === rowSelectionModel[0]);
@@ -93,57 +93,43 @@ const Contacts = () => {
     }
   };
 
-
   const handleSaveEdit = async (updatedContact) => {
     try {
       await axios.put(
         `http://localhost:7071/api/updateEmployee/${updatedContact.id}`,
         updatedContact
       );
-      await fetchData(); // Refetch data after deletion
+      await fetchData(); // Refetch data after saving
       setRowSelectionModel([]);
-      // Clone rows and update the specific row
+      // Update the rows after editing
       const updatedRows = rows.map((row) =>
         row.id === updatedContact.id ? { ...row, ...updatedContact } : row
       );
       setRows(updatedRows); // Update the state with the modified rows
-  
       setOpenEdit(false);
     } catch (error) {
       console.error("Error updating employee:", error);
     }
-    await fetchData(); 
   };
-  
-  
-  
-  
-  
+
+  const confirmedDelete = async () => {
+    try {
+      await axios.delete('http://localhost:7071/api/deleteEmployee', {
+        data: { ids: rowSelectionModel },
+      });
+      await fetchData(); // Refetch data after deletion
+      setRowSelectionModel([]);
+      await closeDeleteBackdrop();
+    } catch (error) {
+      console.error("Error deleting employees:", error);
+    }
+  };
 
   const handleRowDoubleClick = (params) => {
     const { row } = params;
     setSelectedContact(row); // Set the selected contact details
     setModalOpen(true); // Open the modal
   };
-  const fetchData = async () => {
-    const url = "http://localhost:7071/api/employees";
-    try {
-      const response = await axios.get(url);
-      console.log("Fetched Data:", response.data); // Debug fetched data
-      const dataWithId = response.data.map((item, index) => ({
-        ...item,
-        id: item.id || index,
-      }));
-      setRows(dataWithId);
-    } catch (error) {
-      console.error("Error fetching employee data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  
-
 
   return (
     <div>
@@ -189,7 +175,6 @@ const Contacts = () => {
 
       <Paper sx={{ height: 400, width: "100%", marginTop: "1rem" }}>
         <DataGrid
-        key={rows.length} 
           rows={filteredRows}
           columns={columns}
           pageSize={5}
@@ -223,15 +208,16 @@ const Contacts = () => {
       <BackdropEdit
         open={openEdit}
         onClose={() => setOpenEdit(false)}
-        onSave={(updatedContact) => {
-          setOpenEdit(false); // Ensure modal closes
-          handleSaveEdit(updatedContact); // Save the updated contact
-        }}
+        onSave={handleSaveEdit}
         contact={selectedContact}
       />
 
-
-
+      <BackdropDelete
+        open={openDelete}
+        onClose={closeDeleteBackdrop}
+        onConfirm={confirmedDelete}
+        contact={selectedContact}
+      />
 
       {/* Modal to Display User Details */}
       <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="sm" fullWidth>
@@ -239,18 +225,97 @@ const Contacts = () => {
         <DialogContent>
           {selectedContact && (
             <div>
-              <p><strong>ID:</strong> {selectedContact.id}</p>
-              <p><strong>Company:</strong> {selectedContact.company}</p>
-              <p><strong>Role:</strong> {selectedContact.role}</p>
-              <p><strong>First Name:</strong> {selectedContact.firstName}</p>
-              <p><strong>Last Name:</strong> {selectedContact.lastName}</p>
-              <p><strong>Email:</strong> {selectedContact.email}</p>
-              <p><strong>Phone:</strong> {selectedContact.phone}</p>
+              <TextField
+                label="ID"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                name="ID"
+                value={selectedContact.id || ""}
+                InputProps={{
+                  readOnly: true,
+                  style: { color: 'black' },
+                }}
+              />
+              <TextField
+                label="Company"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                name="Company"
+                value={selectedContact.company || ""}
+                InputProps={{
+                  readOnly: true,
+                  style: { color: 'black' },
+                }}
+              />
+              <TextField
+                label="Role"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                name="Role"
+                value={selectedContact.role || ""}
+                InputProps={{
+                  readOnly: true,
+                  style: { color: 'black' },
+                }}
+              />
+              <TextField
+                label="First Name"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                name="First Name"
+                value={selectedContact.firstName || ""}
+                InputProps={{
+                  readOnly: true,
+                  style: { color: 'black' },
+                }}
+              />
+              <TextField
+                label="Last Name"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                name="Last Name"
+                value={selectedContact.lastName || ""}
+                InputProps={{
+                  readOnly: true,
+                  style: { color: 'black' },
+                }}
+              />
+              <TextField
+                label="Email"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                name="Email"
+                value={selectedContact.email || ""}
+                InputProps={{
+                  readOnly: true,
+                  style: { color: 'black' },
+                }}
+              />
+              <TextField
+                label="Phone"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                name="Phone"
+                value={selectedContact.phone || ""}
+                InputProps={{
+                  readOnly: true,
+                  style: { color: 'black' },
+                }}
+              />
             </div>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setModalOpen(false)} color="primary">Close</Button>
+          <Button onClick={() => setModalOpen(false)} color="primary">
+            Close
+          </Button>
         </DialogActions>
       </Dialog>
     </div>
