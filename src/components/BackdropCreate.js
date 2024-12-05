@@ -44,10 +44,11 @@ const ContactForm = ({ open, onClose, onSave }) => {
     <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={open}>
       <Dialog open={open} onClose={onClose}>
         <DialogTitle>Create New Contact</DialogTitle>
+        <p> Please enter new user details</p>
         <DialogContent>
         <TextField
             label="UID"
-            variant="outlined"
+            variant="filled"
             fullWidth
             margin="normal"
             name="id"
@@ -56,7 +57,7 @@ const ContactForm = ({ open, onClose, onSave }) => {
           />
           <TextField
             label="Company"
-            variant="outlined"
+            variant="filled"
             fullWidth
             margin="normal"
             name="company"
@@ -65,7 +66,7 @@ const ContactForm = ({ open, onClose, onSave }) => {
           />
           <TextField
             label="Role"
-            variant="outlined"
+            variant="filled"
             fullWidth
             margin="normal"
             name="role"
@@ -74,7 +75,7 @@ const ContactForm = ({ open, onClose, onSave }) => {
           />
           <TextField
             label="First Name"
-            variant="outlined"
+            variant="filled"
             fullWidth
             margin="normal"
             name="firstName"
@@ -83,7 +84,7 @@ const ContactForm = ({ open, onClose, onSave }) => {
           />
           <TextField
             label="Last Name"
-            variant="outlined"
+            variant="filled"
             fullWidth
             margin="normal"
             name="lastName"
@@ -92,7 +93,7 @@ const ContactForm = ({ open, onClose, onSave }) => {
           />
           <TextField
             label="Email"
-            variant="outlined"
+            variant="filled"
             fullWidth
             margin="normal"
             name="email"
@@ -101,7 +102,7 @@ const ContactForm = ({ open, onClose, onSave }) => {
           />
           <TextField
             label="Phone"
-            variant="outlined"
+            variant="filled"
             fullWidth
             margin="normal"
             name="phone"
