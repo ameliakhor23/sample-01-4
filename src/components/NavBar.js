@@ -47,7 +47,7 @@ const NavBar = () => {
           };
 
           // Call your backend API with the user info
-          const response = await fetch("http://localhost:7071/api/httpexample", {
+          const response = await fetch("http://localhost:5000/httpexample", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

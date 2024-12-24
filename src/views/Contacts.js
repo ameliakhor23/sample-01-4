@@ -15,6 +15,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import BackdropDelete from "../components/BackdropDelete";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const columns = [
   { field: "id", headerName: "ID", width: 70 },
@@ -25,7 +26,6 @@ const columns = [
   { field: "email", headerName: "Email", width: 200 },
   { field: "phone", headerName: "Phone", width: 150 },
 ];
-
 const Contacts = () => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,34 +35,80 @@ const Contacts = () => {
   const [openEdit, setOpenEdit] = useState(false);
   const [selectedContact, setSelectedContact] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [openDelete, setOpenDelete] = useState(false); // State for delete backdrop
+  const [openDelete, setOpenDelete] = useState(false);
+  const [accessDenied, setAccessDenied] = useState(false);
+  const [role, setRole] = useState(""); // Store the user role
+  const { user, isAuthenticated } = useAuth0();
+
+  useEffect(() => {
+    const verifyAndFetchData = async () => {
+      if (!isAuthenticated || !user) {
+        console.error("User is not authenticated.");
+        setAccessDenied(true);
+        return;
+      }
   
-  // Fetch contacts data
+      try {
+        // Verify access
+        const response = await axios.post("http://3.25.223.107:5000/accessVerify", {
+          email: user.email,
+        });
+  
+        const { access, role: userRole } = response.data;
+        setRole(userRole);
+        setAccessDenied(!access);
+  
+        // Fetch data if access is granted
+        if (access) {
+          await fetchData();
+        }
+      } catch (error) {
+        console.error("Error verifying access:", error);
+        setAccessDenied(true); // Deny access by default
+      } finally {
+        setLoading(false); // Ensure the loading state is updated
+      }
+    };
+  
+    verifyAndFetchData();
+  }, [isAuthenticated, user]);
+  
+  
+
+  if (!isAuthenticated) {
+    return <h2 style={{ textAlign: "center", marginTop: "20px" }}>Please log in to access this page.</h2>;
+  }
+
+  if (accessDenied || role === "standard") {
+    return (
+      <h2 style={{ textAlign: "center", marginTop: "20px" }}>
+        Access Denied. You do not have permission to view this page.
+      </h2>
+    );
+  }
+
+
   const fetchData = async () => {
-    const url = "http://localhost:7071/api/employees";
+    const url = "http://3.25.223.107:5000/getcontacts";
     try {
       const response = await axios.get(url);
       const dataWithId = response.data.map((item, index) => ({
         ...item,
-        id: item.id || index, // Ensure every item has an `id`
+        id: item.id || index,
       }));
-      setRows(dataWithId); // Update rows state with new data
+      setRows(dataWithId);
     } catch (error) {
-      console.error("Error fetching employee data:", error);
-    } finally {
-      setLoading(false); // Ensure loading is false after fetch
+      console.error("Error fetching contacts:", error);
     }
   };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const filteredRows = rows.filter((row) =>
     ["company", "role", "firstName", "lastName", "email"].some((field) =>
       row[field]?.toString().toLowerCase().includes(search.toLowerCase())
     )
   );
+
+
 
   const handleAddContact = async (newContact) => {
     await fetchData(); // Refetch data to include the newly added contact
@@ -95,26 +141,31 @@ const Contacts = () => {
 
   const handleSaveEdit = async (updatedContact) => {
     try {
-      await axios.put(
-        `http://localhost:7071/api/updateEmployee/${updatedContact.id}`,
-        updatedContact
+      // // Send the PUT request to update the employee data
+      // await axios.put(
+      //   `http://127.0.0.1:5000/updateEmployee/${updatedContact.id}`,
+      //   updatedContact
+      // );
+  
+      // // Directly update the rows after editing
+      setRows(prevRows => 
+        prevRows.map(row =>
+          row.id === updatedContact.id ? { ...row, ...updatedContact } : row
+        )
       );
-      await fetchData(); // Refetch data after saving
-      setRowSelectionModel([]);
-      // Update the rows after editing
-      const updatedRows = rows.map((row) =>
-        row.id === updatedContact.id ? { ...row, ...updatedContact } : row
-      );
-      setRows(updatedRows); // Update the state with the modified rows
-      setOpenEdit(false);
+      
+      setRowSelectionModel([]); // Clear any selected row
+      setOpenEdit(false); // Close the edit modal
     } catch (error) {
       console.error("Error updating employee:", error);
     }
   };
+  
+  
 
   const confirmedDelete = async () => {
     try {
-      await axios.delete('http://localhost:7071/api/deleteEmployee', {
+      await axios.delete('http://3.25.223.107:5000/deleteEmployee', {
         data: { ids: rowSelectionModel },
       });
       await fetchData(); // Refetch data after deletion
