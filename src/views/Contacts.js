@@ -50,7 +50,7 @@ const Contacts = () => {
   
       try {
         // Verify access
-        const response = await axios.post("http://127.0.0.1:5000/accessVerify", {
+        const response = await axios.post("http://3.25.223.107:5000/accessVerify", {
           email: user.email,
         });
   
@@ -89,7 +89,7 @@ const Contacts = () => {
 
 
   const fetchData = async () => {
-    const url = "http://127.0.0.1:5000/getcontacts";
+    const url = "http://3.25.223.107:5000/getcontacts";
     try {
       const response = await axios.get(url);
       const dataWithId = response.data.map((item, index) => ({
@@ -165,7 +165,7 @@ const Contacts = () => {
 
   const confirmedDelete = async () => {
     try {
-      await axios.delete('http://127.0.0.1:5000/deleteEmployee', {
+      await axios.delete('http://3.25.223.107:5000/deleteEmployee', {
         data: { ids: rowSelectionModel },
       });
       await fetchData(); // Refetch data after deletion

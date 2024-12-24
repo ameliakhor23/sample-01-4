@@ -28,7 +28,7 @@ const BackdropEdit = ({ open, onClose, onSave, contact }) => {
 
   const handleSave = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:5000/updateEmployee", {
+      const response = await fetch("http://3.25.223.107:5000/updateEmployee", {
         method: "PUT",  // Change method to PUT for updating
         headers: {
           "Content-Type": "application/json",
