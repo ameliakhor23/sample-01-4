@@ -34,7 +34,7 @@ const ContactForm = ({ open, onClose, onSave }) => {
       const token = await getAccessTokenSilently();
   
       // Step 1: Create the employee
-      const createEmployeeResponse = await axios.post('http://3.25.223.107:5000/createEmployee', newContact, {
+      const createEmployeeResponse = await axios.post('https://api.xcitesolutions.com.au/createEmployee', newContact, {
         headers: {
           'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
           'Content-Type': 'application/json', // Ensure the request body is JSON
@@ -46,7 +46,7 @@ const ContactForm = ({ open, onClose, onSave }) => {
       // Step 2: Trigger email verification (create user)
       const { email } = newContact;
       const defaultPassword = 'TestPassword123'; // Make sure to define the password here
-      const inviteUserResponse = await fetch("http://3.25.223.107:5000/create_user", {
+      const inviteUserResponse = await fetch("https://api.xcitesolutions.com.au/create_user", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -61,7 +61,7 @@ const ContactForm = ({ open, onClose, onSave }) => {
       const inviteUserData = await inviteUserResponse.json();
       console.log("User invited successfully:", inviteUserData);
       // Step 3: Change password for the user (no email verification in this step)
-      const passwordChangeResponse = await fetch("http://3.25.223.107:5000/password_change", {
+      const passwordChangeResponse = await fetch("https://api.xcitesolutions.com.au/password_change", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -50,9 +50,12 @@ const Contacts = () => {
   
       try {
         // Verify access
-        const response = await axios.post("http://3.25.223.107:5000/accessVerify", {
+        const apiUrl = "https://api.xcitesolutions.com.au/accessVerify"; // Log the API URL
+        console.log('API URL:', apiUrl); // This logs the full URL
+        const response = await axios.post(apiUrl, {
           email: user.email,
         });
+
   
         const { access, role: userRole } = response.data;
         setRole(userRole);
@@ -89,7 +92,7 @@ const Contacts = () => {
 
 
   const fetchData = async () => {
-    const url = "http://3.25.223.107:5000/getcontacts";
+    const url = "https://api.xcitesolutions.com.au/getcontacts";
     try {
       const response = await axios.get(url);
       const dataWithId = response.data.map((item, index) => ({
@@ -141,13 +144,7 @@ const Contacts = () => {
 
   const handleSaveEdit = async (updatedContact) => {
     try {
-      // // Send the PUT request to update the employee data
-      // await axios.put(
-      //   `http://127.0.0.1:5000/updateEmployee/${updatedContact.id}`,
-      //   updatedContact
-      // );
-  
-      // // Directly update the rows after editing
+
       setRows(prevRows => 
         prevRows.map(row =>
           row.id === updatedContact.id ? { ...row, ...updatedContact } : row
@@ -165,7 +162,7 @@ const Contacts = () => {
 
   const confirmedDelete = async () => {
     try {
-      await axios.delete('http://3.25.223.107:5000/deleteEmployee', {
+      await axios.delete('https://api.xcitesolutions.com.au/deleteEmployee', {
         data: { ids: rowSelectionModel },
       });
       await fetchData(); // Refetch data after deletion
